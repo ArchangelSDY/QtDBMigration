@@ -1,0 +1,14 @@
+{
+    "schemaVersions": [
+        {
+            "version": 0,
+            "applySql": "create table table1(id integer)",
+            "revertSql": "drop table table1"
+        },
+        {
+            "version": 1,
+            "applySql": "create table table2(id integer)",
+            "revertSql": "drop table table2"
+        }
+    ]
+}

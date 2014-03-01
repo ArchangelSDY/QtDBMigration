@@ -1,0 +1,9 @@
+.moc/
+.obj/
+.qmake.stash
+*.swp
+*.swo
+*.a
+*.dylib
+*.pro.user
+Makefile
