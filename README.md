@@ -33,7 +33,8 @@ QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
 db.setDatabaseName("test.db");
 if (db.open()) {
     QtDBMigration mig("./config.json");
-    mig.migrate();
+    mig.migrate();  // Database will be at latest version
+    mig.migrate(0); // Database will be at version 0
 }
 ```
 
