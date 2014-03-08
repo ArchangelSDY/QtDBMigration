@@ -38,6 +38,8 @@ public:
     ~QtDBMigration();
 
     bool migrate();
+    bool migrate(int version);
+
     int version();
 
 private:

@@ -34,6 +34,7 @@ public:
 
     int version();
     bool migrate();
+    bool migrate(int version);
 
 private:
     bool createMetaTable();
@@ -83,23 +84,45 @@ int QtDBMigrationPrivate::version()
 
 bool QtDBMigrationPrivate::migrate()
 {
+    int latestVersion = m_config->schemaVersions().last()->version();
+    return migrate(latestVersion);
+}
+
+bool QtDBMigrationPrivate::migrate(int destVer)
+{
     int curVer = version();
+    if (curVer != QtDBMigration::EMPTY_VERSION &&
+            (curVer < 0 || curVer >= m_config->schemaVersions().count())) {
+        qWarning() << "Invalid current schema version:" << curVer;
+        return false;
+    }
 
-    if (m_config->schemaVersions().count() > 0) {
-        int latestVersion = m_config->schemaVersions().last()->version();
+    if (curVer < destVer) {
+        for (int i = curVer + 1; i <= destVer; ++i) {
+            SchemaVersion *schemaVersion = m_config->schemaVersions()[i];
+            bool ok = schemaVersion->apply(m_q->m_db);
 
-        if (curVer < latestVersion) {
-            for (int i = curVer + 1; i <= latestVersion; ++i) {
-                SchemaVersion *schemaVersion = m_config->schemaVersions()[i];
-                bool ok = schemaVersion->apply(m_q->m_db);
-
-                if (!ok) {
-                    qWarning() << "Fail to apply schema version:" << i
-                               << ", aborting...";
-                    return false;
-                }
+            if (!ok) {
+                qWarning() << "Fail to apply schema version:" << i
+                           << ", aborting...";
+                return false;
             }
         }
+    } else if (curVer > destVer) {
+        for (int i = curVer; i > destVer; --i) {
+            SchemaVersion *schemaVersion = m_config->schemaVersions()[i];
+            bool ok = schemaVersion->revert(m_q->m_db);
+
+            if (!ok) {
+                qWarning() << "Fail to revert schema version:" << i
+                           << ", aborting...";
+                return false;
+            }
+        }
+    } else {
+        // curVers == destVer
+        // No need to migrate
+        return true;
     }
 
     return true;
@@ -145,4 +168,9 @@ int QtDBMigration::version()
 bool QtDBMigration::migrate()
 {
     return m_p->migrate();
+}
+
+bool QtDBMigration::migrate(int version)
+{
+    return m_p->migrate(version);
 }

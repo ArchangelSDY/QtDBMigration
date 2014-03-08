@@ -38,6 +38,9 @@ private Q_SLOTS:
 
     void migrate();
     void migrate_data();
+
+    void migrateVersion();
+    void migrateVersion_data();
 };
 
 QtDBMigrationTest::QtDBMigrationTest()
@@ -72,6 +75,7 @@ void QtDBMigrationTest::migrate()
     QVERIFY(ok);
 
     QStringList dbTables = db.tables();
+    QCOMPARE(dbTables.count(), tableNames.count() + 1);
     foreach (const QString &tableName, tableNames) {
         QVERIFY(dbTables.contains(tableName));
     }
@@ -89,6 +93,47 @@ void QtDBMigrationTest::migrate_data()
         << "test_migrate_1.json"
         << (QStringList() << "table1" << "table2")
         << 1;
+}
+
+void QtDBMigrationTest::migrateVersion()
+{
+    QFETCH(QString, configPath);
+    QFETCH(QList<int>, stepVersions);
+    QFETCH(QStringList, finalTableNames);
+
+    QSqlDatabase db = QSqlDatabase::database();
+
+    QtDBMigration mig(configPath);
+    foreach (int stepVersion, stepVersions) {
+        bool ok = mig.migrate(stepVersion);
+        QVERIFY(ok);
+    }
+
+    QStringList dbTables = db.tables();
+    QCOMPARE(dbTables.count(), finalTableNames.count() + 1);
+    foreach (const QString &tableName, finalTableNames) {
+        QVERIFY(dbTables.contains(tableName));
+    }
+}
+
+void QtDBMigrationTest::migrateVersion_data()
+{
+    QTest::addColumn<QString>("configPath");
+    QTest::addColumn<QList<int> >("stepVersions");
+    QTest::addColumn<QStringList>("finalTableNames");
+
+    QTest::newRow("Migrate: init -> 0")
+        << "test_migrate_1.json"
+        << (QList<int>() << 0)
+        << (QStringList() << "table1");
+    QTest::newRow("Migrate: init -> 0 -> 1")
+        << "test_migrate_1.json"
+        << (QList<int>() << 0 << 1)
+        << (QStringList() << "table1" << "table2");
+    QTest::newRow("Migrate: init -> 0 -> 1 -> 0")
+        << "test_migrate_1.json"
+        << (QList<int>() << 0 << 1 << 0)
+        << (QStringList() << "table1");
 }
 
 QTEST_APPLESS_MAIN(QtDBMigrationTest)
