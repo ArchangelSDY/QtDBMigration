@@ -84,6 +84,11 @@ int QtDBMigrationPrivate::version()
 
 bool QtDBMigrationPrivate::migrate()
 {
+    if (m_config->schemaVersions().isEmpty()) {
+        qWarning() << "Empty schema versions";
+        return false;
+    }
+
     int latestVersion = m_config->schemaVersions().last()->version();
     return migrate(latestVersion);
 }
