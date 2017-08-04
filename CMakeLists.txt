@@ -23,5 +23,3 @@ set(LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)")
 set(LIB_DESTINATION "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}" CACHE STRING "Library directory name" FORCE)
 
 add_subdirectory(src)
-
-install(FILES DESTINATION ${CMAKE_ROOT}/Modules)
