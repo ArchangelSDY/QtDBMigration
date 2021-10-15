@@ -12,7 +12,7 @@ set(SRCS ${SRCS} ${MOC_SRCS})
 
 add_library(qtdbmigration ${SRCS})
 set_target_properties(qtdbmigration PROPERTIES VERSION 1.0.0 SOVERSION 1)
-target_link_libraries(qtdbmigration Qt5::Core Qt5::Sql)
+target_link_libraries(qtdbmigration Qt::Core Qt::Sql)
 
 if(BUILD_SHARED_LIBS)
     install(FILES ${PUBLIC_HEADERS} DESTINATION include/qtdbmigration)
